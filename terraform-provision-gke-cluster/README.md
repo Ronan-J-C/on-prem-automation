@@ -32,7 +32,7 @@ terraform init
 terraform apply
 ```
 
-![Apply](/images/apply.png)
+![Apply](images/apply.png)
 
 See https://learn.hashicorp.com/tutorials/terraform/gke to set up environment and run commands
 
