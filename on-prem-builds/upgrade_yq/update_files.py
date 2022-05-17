@@ -36,7 +36,7 @@ def process_writes(line):
     return updated_line.rjust(len(updated_line)+leading_spaces)
 
 
-def delete_orig_files(files):
+def delete_files(files):
 
     for file in files:
         print(file)
@@ -45,6 +45,9 @@ def delete_orig_files(files):
             os.remove(file)
         except OSError as err:
             raise(err)
+
+
+
 def backup_scripts():
 
     print('Backing up')
@@ -67,6 +70,8 @@ def update_files():
     print('Writing new file')
     i=0
 
+    back_up_files=[]
+
     for root, dirs, files in os.walk(REPO_PATH):
 
         for file in files:
@@ -76,6 +81,8 @@ def update_files():
             if(file == BACKUP_FILE):
 
                 # READ FILE
+
+                back_up_files.append(os.path.join(root,BACKUP_FILE))
 
                 orig_file=os.path.join(root,FILE_OF_INTEREST)
                 print('Rewriting {}'.format(orig_file))
@@ -104,5 +111,9 @@ def update_files():
                 except OSError as err:
                     raise(err)
 
+    return back_up_files
 
-update_files()
+orig_files=backup_scripts()
+delete_files(orig_files)
+backup_files=update_files()
+delete_files(backup_files)
