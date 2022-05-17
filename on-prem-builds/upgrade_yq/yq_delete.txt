@@ -1,0 +1,1030 @@
+harness/harness-core/100-migrator/container/scripts/replace_configs.sh:
+   18  
+   19: yq delete -i $CONFIG_FILE server.applicationConnectors[0]
+   20: yq delete -i $CONFIG_FILE grpcServerConfig.connectors[0]
+   21  
+
+  125  else
+  126:   yq delete -i $CONFIG_FILE events-mongo
+  127  fi
+
+  207  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  208:   yq delete -i $CONFIG_FILE logging.appenders[2]
+  209:   yq delete -i $CONFIG_FILE logging.appenders[0]
+  210    yq write -i $CONFIG_FILE logging.appenders[0].stackdriverLogEnabled "true"
+
+  212    if [[ "$ROLLING_FILE_LOGGING_ENABLED" == "true" ]]; then
+  213:     yq delete -i $CONFIG_FILE logging.appenders[1]
+  214      yq write -i $CONFIG_FILE logging.appenders[1].currentLogFilename "/opt/harness/logs/portal.log"
+
+  216    else
+  217:     yq delete -i $CONFIG_FILE logging.appenders[2]
+  218:     yq delete -i $CONFIG_FILE logging.appenders[1]
+  219    fi
+
+  659  
+  660: yq delete -i $REDISSON_CACHE_FILE codec
+  661  
+
+  670    yq write -i $CONFIG_FILE redisAtmosphereConfig.sentinel true
+  671:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  672  fi
+
+harness/harness-core/110-change-data-capture/container/scripts/replace_configs.sh:
+   9  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  10:   yq delete -i $CONFIG_FILE logging.appenders[0]
+  11    yq write -i $CONFIG_FILE logging.appenders[0].stackdriverLogEnabled "true"
+  12  else
+  13:   yq delete -i $CONFIG_FILE logging.appenders[1]
+  14  fi
+
+  16  # Remove the TLS connector (as ingress terminates TLS)
+  17: yq delete -i $CONFIG_FILE connectors[0]
+  18  
+
+harness/harness-core/120-ng-manager/container/scripts/replace_configs.sh:
+   39  
+   40: yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==https)'
+   41  yq write -i $CONFIG_FILE server.adminConnectors "[]"
+   42  
+   43: yq delete -i $CONFIG_FILE 'grpcServer.connectors.(secure==true)'
+   44: yq delete -i $CONFIG_FILE 'pmsSdkGrpcServerConfig.connectors.(secure==true)'
+   45: yq delete -i $CONFIG_FILE 'gitSyncServerConfig.connectors.(secure==true)'
+   46  
+
+   71  if [[ "" != "$ALLOWED_ORIGINS" ]]; then
+   72:   yq delete -i $CONFIG_FILE allowedOrigins
+   73    yq write -i $CONFIG_FILE allowedOrigins "$ALLOWED_ORIGINS"
+
+   80  if [[ "" != "$MONGO_HOSTS_AND_PORTS" ]]; then
+   81:   yq delete -i $CONFIG_FILE mongo.uri
+   82    yq write -i $CONFIG_FILE mongo.username "$MONGO_USERNAME"
+
+  122  if [[ "" != "$PMS_MONGO_HOSTS_AND_PORTS" ]]; then
+  123:   yq delete -i $CONFIG_FILE pmsMongo.uri
+  124    yq write -i $CONFIG_FILE pmsMongo.username "$PMS_MONGO_USERNAME"
+
+  287  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  288:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  289    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  290  else
+  291:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  292  fi
+
+  317  
+  318: yq delete -i $REDISSON_CACHE_FILE codec
+  319  
+
+  339  if [[ "$LOCK_CONFIG_USE_SENTINEL" == "true" ]]; then
+  340:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  341  fi
+
+harness/harness-core/210-command-library-server/container/scripts/replace_configs.sh:
+  26  
+  27: yq delete -i /opt/harness/command-library-server-config.yml server.adminConnectors
+  28: yq delete -i /opt/harness/command-library-server-config.yml server.applicationConnectors[0]
+  29  
+
+  48  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  49:   yq delete -i /opt/harness/command-library-server-config.yml logging.appenders[0]
+  50    yq write -i /opt/harness/command-library-server-config.yml logging.appenders[0].stackdriverLogEnabled "true"
+  51  else
+  52:   yq delete -i /opt/harness/command-library-server-config.yml logging.appenders[1]
+  53  fi
+
+harness/harness-core/270-delegate-service-app/container/scripts/replace_configs.sh:
+   17  
+   18: yq delete -i $CONFIG_FILE server.applicationConnectors[0]
+   19: yq delete -i $CONFIG_FILE grpcServerConfig.connectors[0]
+   20: yq delete -i $CONFIG_FILE grpcServerClassicConfig.connectors[0]
+   21  
+
+  130  else
+  131:   yq delete -i $CONFIG_FILE events-mongo
+  132  fi
+
+  196  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  197:   yq delete -i $CONFIG_FILE logging.appenders[2]
+  198:   yq delete -i $CONFIG_FILE logging.appenders[0]
+  199    yq write -i $CONFIG_FILE logging.appenders[0].stackdriverLogEnabled "true"
+
+  201    if [[ "$ROLLING_FILE_LOGGING_ENABLED" == "true" ]]; then
+  202:     yq delete -i $CONFIG_FILE logging.appenders[1]
+  203      yq write -i $CONFIG_FILE logging.appenders[1].currentLogFilename "/opt/harness/logs/delegate-service.log"
+
+  205    else
+  206:     yq delete -i $CONFIG_FILE logging.appenders[2]
+  207:     yq delete -i $CONFIG_FILE logging.appenders[1]
+  208    fi
+
+  314  
+  315: yq delete -i $REDISSON_CACHE_FILE codec
+  316  
+
+  325    yq write -i $CONFIG_FILE redisAtmosphereConfig.sentinel true
+  326:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  327  fi
+
+harness/harness-core/270-verification/container/scripts/replace_configs.sh:
+  16  
+  17: yq delete -i /opt/harness/verification-config.yml server.adminConnectors
+  18: yq delete -i /opt/harness/verification-config.yml server.applicationConnectors[0]
+  19  
+
+  54  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  55:   yq delete -i /opt/harness/verification-config.yml logging.appenders[2]
+  56:   yq delete -i /opt/harness/verification-config.yml logging.appenders[0]
+  57    yq write -i /opt/harness/verification-config.yml logging.appenders[0].stackdriverLogEnabled "true"
+
+  59    if [[ "$ROLLING_FILE_LOGGING_ENABLED" == "true" ]]; then
+  60:     yq delete -i /opt/harness/verification-config.yml logging.appenders[1]
+  61      yq write -i /opt/harness/verification-config.yml logging.appenders[1].currentLogFilename "/opt/harness/logs/verification.log"
+
+  63    else
+  64:     yq delete -i /opt/harness/verification-config.yml logging.appenders[2]
+  65:     yq delete -i /opt/harness/verification-config.yml logging.appenders[1]
+  66    fi
+
+harness/harness-core/300-cv-nextgen/container/scripts/replace_configs.sh:
+   17  
+   18: yq delete -i /opt/harness/cv-nextgen-config.yml server.adminConnectors
+   19: yq delete -i /opt/harness/cv-nextgen-config.yml server.applicationConnectors[0]
+   20: yq delete -i $CONFIG_FILE pmsSdkGrpcServerConfig.connectors[0]
+   21  
+
+   48  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+   49:   yq delete -i /opt/harness/cv-nextgen-config.yml logging.appenders[0]
+   50    yq write -i /opt/harness/cv-nextgen-config.yml logging.appenders[0].stackdriverLogEnabled "true"
+   51  else
+   52:   yq delete -i /opt/harness/cv-nextgen-config.yml logging.appenders[1]
+   53  fi
+
+  125  
+  126: yq delete -i $REDISSON_CACHE_FILE codec
+  127  
+
+  137  if [[ "$CACHE_CONFIG_USE_SENTINEL" == "true" ]]; then
+  138:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  139  fi
+
+harness/harness-core/310-ci-manager/container/scripts/replace_configs.sh:
+   18  
+   19: yq delete -i $CONFIG_FILE server.applicationConnectors[0]
+   20  yq write -i $CONFIG_FILE server.adminConnectors "[]"
+   21  
+   22: yq delete -i $CONFIG_FILE pmsSdkGrpcServerConfig.connectors[0]
+   23  
+
+  150  if [[ "" != "$ALLOWED_ORIGINS" ]]; then
+  151:   yq delete -i $CONFIG_FILE allowedOrigins
+  152    yq write -i $CONFIG_FILE allowedOrigins "$ALLOWED_ORIGINS"
+
+  267  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  268:   yq delete -i $CONFIG_FILE logging.appenders[0]
+  269    yq write -i $CONFIG_FILE logging.appenders[0].stackdriverLogEnabled "true"
+  270  else
+  271:   yq delete -i $CONFIG_FILE logging.appenders[1]
+  272  fi
+
+  288  
+  289: yq delete -i $REDISSON_CACHE_FILE codec
+  290  
+
+  300  if [[ "$CACHE_CONFIG_USE_SENTINEL" == "true" ]]; then
+  301:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  302  fi
+
+harness/harness-core/340-ce-nextgen/container/scripts/replace_configs.sh:
+  17  #
+  18: yq delete -i $CONFIG_FILE server.adminConnectors
+  19: yq delete -i $CONFIG_FILE server.applicationConnectors[0]
+  20  
+
+  82  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  83:   yq delete -i $CONFIG_FILE logging.appenders[0]
+  84    yq write -i $CONFIG_FILE logging.appenders[0].stackdriverLogEnabled "true"
+  85  else
+  86:   yq delete -i $CONFIG_FILE logging.appenders[1]
+  87  fi
+
+harness/harness-core/350-event-server/container/scripts/replace_configs.sh:
+   9  # Remove the TLS connector (as ingress terminates TLS)
+  10: yq delete -i $CONFIG_FILE connectors[0]
+  11  
+
+harness/harness-core/360-cg-manager/container/scripts/replace_configs.sh:
+   40  
+   41: yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==h2)'
+   42: yq delete -i $CONFIG_FILE 'grpcServerConfig.connectors.(secure==true)'
+   43  
+
+  105  if [[ "" != "$MONGO_HOSTS_AND_PORTS" ]]; then
+  106:   yq delete -i $CONFIG_FILE mongo.uri
+  107    yq write -i $CONFIG_FILE mongo.username "$MONGO_USERNAME"
+
+  166    if [[ "" != "$EVENTS_MONGO_HOSTS_AND_PORTS" ]]; then
+  167:     yq delete -i $CONFIG_FILE events-mongo.uri
+  168      yq write -i $CONFIG_FILE events-mongo.username "$EVENTS_MONGO_USERNAME"
+
+  174    else
+  175:     yq delete -i $CONFIG_FILE events-mongo
+  176    fi
+
+  257  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  258:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==file)'
+  259:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  260    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  262    if [[ "$ROLLING_FILE_LOGGING_ENABLED" == "true" ]]; then
+  263:     yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  264      yq write -i $CONFIG_FILE 'logging.appenders.(type==file).currentLogFilename' "/opt/harness/logs/portal.log"
+
+  266    else
+  267:     yq delete -i $CONFIG_FILE 'logging.appenders.(type==file)'
+  268:     yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  269    fi
+
+  705  
+  706: yq delete -i $REDISSON_CACHE_FILE codec
+  707  
+
+  716    yq write -i $CONFIG_FILE redisAtmosphereConfig.sentinel true
+  717:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  718  fi
+
+harness/harness-core/800-pipeline-service/container/scripts/replace_configs.sh:
+   23  
+   24: yq delete -i $CONFIG_FILE 'grpcServerConfig.connectors.(secure==true)'
+   25: yq delete -i $CONFIG_FILE 'gitSdkConfiguration.gitSdkGrpcServerConfig.connectors.(secure==true)'
+   26  
+
+  212  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  213:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  214    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  215  else
+  216:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  217  fi
+
+  263  
+  264: yq delete -i $REDISSON_CACHE_FILE codec
+  265  
+
+  275  if [[ "$CACHE_CONFIG_USE_SENTINEL" == "true" ]]; then
+  276:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  277  fi
+
+harness/harness-core/840-template-service/container/scripts/replace_configs.sh:
+   19  
+   20: yq delete -i $CONFIG_FILE gitSdkConfiguration.gitSdkGrpcServerConfig.connectors[0]
+   21  
+
+  103  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  104:   yq delete -i $CONFIG_FILE logging.appenders[0]
+  105    yq write -i $CONFIG_FILE logging.appenders[0].stackdriverLogEnabled "true"
+  106  else
+  107:   yq delete -i $CONFIG_FILE logging.appenders[1]
+  108  fi
+
+  126  
+  127: yq delete -i $REDISSON_CACHE_FILE codec
+  128  
+
+  137  if [[ "$CACHE_CONFIG_USE_SENTINEL" == "true" ]]; then
+  138:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  139  fi
+
+harness/harness-core/950-events-framework-monitor/container/scripts/replace_configs.sh:
+  30  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  31:   yq delete -i $CONFIG_FILE logging.appenders[0]
+  32    yq write -i $CONFIG_FILE logging.appenders[0].stackdriverLogEnabled "true"
+  33  else
+  34:   yq delete -i $CONFIG_FILE logging.appenders[1]
+  35  fi
+
+harness/harness-core/951-debezium-service/container/scripts/replace_configs.sh:
+  33  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  34:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  35    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  36  else
+  37:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  38  fi
+
+  48  
+  49: yq delete -i $REDISSON_CACHE_FILE codec
+  50  
+
+  60  if [[ "$CACHE_CONFIG_USE_SENTINEL" == "true" ]]; then
+  61:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  62  fi
+
+harness/harness-core/access-control/build/container/scripts/replace_configs.sh:
+   8  
+   9: yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==https)'
+  10  
+
+  13  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  14:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  15    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  16  else
+  17:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  18  fi
+
+harness/harness-core/dockerization/analyser-service/scripts/replace_configs.sh:
+  17  
+  18: yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==https)'
+  19  yq write -i $CONFIG_FILE server.adminConnectors "[]"
+
+  21  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  22:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  23    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  24  else
+  25:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  26  fi
+
+harness/harness-core/dockerization/ce-nextgen/scripts/replace_configs.sh:
+   39  #
+   40: yq delete -i $CONFIG_FILE server.adminConnectors
+   41: yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==https)'
+   42  
+
+   49  if [[ "" != "$EVENTS_MONGO_HOSTS_AND_PORTS" ]]; then
+   50:   yq delete -i $CONFIG_FILE events-mongo.uri
+   51    replace_key_value events-mongo.username "$EVENTS_MONGO_USERNAME"
+
+  119  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  120:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  121    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  122  else
+  123:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  124  fi
+
+harness/harness-core/dockerization/change-data-capture/scripts/replace_configs.sh:
+   9  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  10:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  11    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  12  else
+  13:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  14  fi
+
+  16  # Remove the TLS connector (as ingress terminates TLS)
+  17: yq delete -i $CONFIG_FILE connectors[0]
+  18  
+
+harness/harness-core/dockerization/ci-manager/scripts/replace_configs.sh:
+   18  
+   19: yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==https)'
+   20  yq write -i $CONFIG_FILE server.adminConnectors "[]"
+   21  
+   22: yq delete -i $CONFIG_FILE 'pmsSdkGrpcServerConfig.connectors.(secure==true)'
+   23  
+
+  154  if [[ "" != "$ALLOWED_ORIGINS" ]]; then
+  155:   yq delete -i $CONFIG_FILE allowedOrigins
+  156    yq write -i $CONFIG_FILE allowedOrigins "$ALLOWED_ORIGINS"
+
+  267  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  268:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  269    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  270  else
+  271:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  272  fi
+
+  288  
+  289: yq delete -i $REDISSON_CACHE_FILE codec
+  290  
+
+  300  if [[ "$CACHE_CONFIG_USE_SENTINEL" == "true" ]]; then
+  301:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  302  fi
+
+harness/harness-core/dockerization/command-library-server/scripts/replace_configs.sh:
+  26  
+  27: yq delete -i /opt/harness/command-library-server-config.yml server.adminConnectors
+  28: yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==h2)'
+  29  
+
+  48  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  49:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  50    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  51  else
+  52:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  53  fi
+
+harness/harness-core/dockerization/cv-nextgen/scripts/replace_configs.sh:
+   17  
+   18: yq delete -i /opt/harness/cv-nextgen-config.yml server.adminConnectors
+   19: yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==https)'
+   20: yq delete -i $CONFIG_FILE 'pmsSdkGrpcServerConfig.connectors.(secure==true)'
+   21  
+
+   48  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+   49:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+   50    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+   51  else
+   52:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+   53  fi
+
+  125  
+  126: yq delete -i $REDISSON_CACHE_FILE codec
+  127  
+
+  137  if [[ "$CACHE_CONFIG_USE_SENTINEL" == "true" ]]; then
+  138:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  139  fi
+
+harness/harness-core/dockerization/debezium-service/scripts/replace_configs.sh:
+  33  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  34:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  35    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  36  else
+  37:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  38  fi
+
+  48  
+  49: yq delete -i $REDISSON_CACHE_FILE codec
+  50  
+
+  60  if [[ "$CACHE_CONFIG_USE_SENTINEL" == "true" ]]; then
+  61:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  62  fi
+
+harness/harness-core/dockerization/delegate-service-app/scripts/replace_configs.sh:
+   17  
+   18: yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==h2)'
+   19: yq delete -i $CONFIG_FILE 'grpcServerConfig.connectors.(secure==true)'
+   20: yq delete -i $CONFIG_FILE 'grpcServerClassicConfig.connectors.(secure==true)'
+   21  
+
+  130  else
+  131:   yq delete -i $CONFIG_FILE events-mongo
+  132  fi
+
+  196  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  197:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==file)'
+  198:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  199    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  201    if [[ "$ROLLING_FILE_LOGGING_ENABLED" == "true" ]]; then
+  202:     yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  203      yq write -i $CONFIG_FILE 'logging.appenders.(type==file).currentLogFilename' "/opt/harness/logs/delegate-service.log"
+
+  205    else
+  206:     yq delete -i $CONFIG_FILE 'logging.appenders.(type==file)'
+  207:     yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  208    fi
+
+  315  
+  316: yq delete -i $REDISSON_CACHE_FILE codec
+  317  
+
+  326    yq write -i $CONFIG_FILE redisAtmosphereConfig.sentinel true
+  327:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  328  fi
+
+harness/harness-core/dockerization/event-server/scripts/replace_configs.sh:
+  31  # Remove the TLS connector (as ingress terminates TLS)
+  32: yq delete -i $CONFIG_FILE 'connectors.(secure==true)'
+  33  
+
+  38  if [[ "" != "$MONGO_HOSTS_AND_PORTS" ]]; then
+  39:   yq delete -i $CONFIG_FILE harness-mongo.uri
+  40    yq write -i $CONFIG_FILE harness-mongo.username "$MONGO_USERNAME"
+
+  73  if [[ "" != "$EVENTS_MONGO_HOSTS_AND_PORTS" ]]; then
+  74:   yq delete -i $CONFIG_FILE events-mongo.uri
+  75    yq write -i $CONFIG_FILE events-mongo.username "$EVENTS_MONGO_USERNAME"
+
+harness/harness-core/dockerization/eventsapi-monitor/scripts/replace_configs.sh:
+  30  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  31:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  32    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  33  else
+  34:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  35  fi
+
+harness/harness-core/dockerization/manager/scripts/replace_configs.sh:
+   40  
+   41: yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==h2)'
+   42: yq delete -i $CONFIG_FILE 'grpcServerConfig.connectors.(secure==true)'
+   43  
+
+  105  if [[ "" != "$MONGO_HOSTS_AND_PORTS" ]]; then
+  106:   yq delete -i $CONFIG_FILE mongo.uri
+  107    yq write -i $CONFIG_FILE mongo.username "$MONGO_USERNAME"
+
+  166    if [[ "" != "$EVENTS_MONGO_HOSTS_AND_PORTS" ]]; then
+  167:     yq delete -i $CONFIG_FILE events-mongo.uri
+  168      yq write -i $CONFIG_FILE events-mongo.username "$EVENTS_MONGO_USERNAME"
+
+  174    else
+  175:     yq delete -i $CONFIG_FILE events-mongo
+  176    fi
+
+  257  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  258:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==file)'
+  259:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  260    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  262    if [[ "$ROLLING_FILE_LOGGING_ENABLED" == "true" ]]; then
+  263:     yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  264      yq write -i $CONFIG_FILE 'logging.appenders.(type==file).currentLogFilename' "/opt/harness/logs/portal.log"
+
+  266    else
+  267:     yq delete -i $CONFIG_FILE 'logging.appenders.(type==file)'
+  268:     yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  269    fi
+
+  705  
+  706: yq delete -i $REDISSON_CACHE_FILE codec
+  707  
+
+  716    yq write -i $CONFIG_FILE redisAtmosphereConfig.sentinel true
+  717:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  718  fi
+
+harness/harness-core/dockerization/migrator/scripts/replace_configs.sh:
+   40  
+   41: yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==h2)'
+   42: yq delete -i $CONFIG_FILE 'cg.grpcServerConfig.connectors.(secure==true)'
+   43  
+
+  105  if [[ "" != "$MONGO_HOSTS_AND_PORTS" ]]; then
+  106:   yq delete -i $CONFIG_FILE cg.mongo.uri
+  107    yq write -i $CONFIG_FILE cg.mongo.username "$MONGO_USERNAME"
+
+  158    if [[ "" != "$EVENTS_MONGO_HOSTS_AND_PORTS" ]]; then
+  159:     yq delete -i $CONFIG_FILE cg.events-mongo.uri
+  160      yq write -i $CONFIG_FILE cg.events-mongo.username "$EVENTS_MONGO_USERNAME"
+
+  166    else
+  167:     yq delete -i $CONFIG_FILE cg.events-mongo
+  168    fi
+
+  249  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  250:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==file)'
+  251:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  252    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  254    if [[ "$ROLLING_FILE_LOGGING_ENABLED" == "true" ]]; then
+  255:     yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  256      yq write -i $CONFIG_FILE 'logging.appenders.(type==file).currentLogFilename' "/opt/harness/logs/portal.log"
+
+  258    else
+  259:     yq delete -i $CONFIG_FILE 'logging.appenders.(type==file)'
+  260:     yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  261    fi
+
+  673  
+  674: yq delete -i $REDISSON_CACHE_FILE codec
+  675  
+
+  684    yq write -i $CONFIG_FILE cg.redisAtmosphereConfig.sentinel true
+  685:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  686  fi
+
+harness/harness-core/dockerization/ng-dashboard-service/scripts/replace_configs.sh:
+   9  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  10:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  11    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  12  else
+  13:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  14  fi
+
+  16  # Remove the TLS connector (as ingress terminates TLS)
+  17: yq delete -i $CONFIG_FILE connectors[0]
+  18  
+
+  57  if [[ "" != "$ALLOWED_ORIGINS" ]]; then
+  58:   yq delete -i $CONFIG_FILE allowedOrigins
+  59    yq write -i $CONFIG_FILE allowedOrigins "$ALLOWED_ORIGINS"
+
+harness/harness-core/dockerization/ng-manager/scripts/replace_configs.sh:
+   39  
+   40: yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==https)'
+   41  yq write -i $CONFIG_FILE server.adminConnectors "[]"
+   42  
+   43: yq delete -i $CONFIG_FILE 'grpcServer.connectors.(secure==true)'
+   44: yq delete -i $CONFIG_FILE 'pmsSdkGrpcServerConfig.connectors.(secure==true)'
+   45: yq delete -i $CONFIG_FILE 'gitSyncServerConfig.connectors.(secure==true)'
+   46  
+
+   71  if [[ "" != "$ALLOWED_ORIGINS" ]]; then
+   72:   yq delete -i $CONFIG_FILE allowedOrigins
+   73    yq write -i $CONFIG_FILE allowedOrigins "$ALLOWED_ORIGINS"
+
+   80  if [[ "" != "$MONGO_HOSTS_AND_PORTS" ]]; then
+   81:   yq delete -i $CONFIG_FILE mongo.uri
+   82    yq write -i $CONFIG_FILE mongo.username "$MONGO_USERNAME"
+
+  122  if [[ "" != "$PMS_MONGO_HOSTS_AND_PORTS" ]]; then
+  123:   yq delete -i $CONFIG_FILE pmsMongo.uri
+  124    yq write -i $CONFIG_FILE pmsMongo.username "$PMS_MONGO_USERNAME"
+
+  287  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  288:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  289    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  290  else
+  291:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  292  fi
+
+  317  
+  318: yq delete -i $REDISSON_CACHE_FILE codec
+  319  
+
+  339  if [[ "$LOCK_CONFIG_USE_SENTINEL" == "true" ]]; then
+  340:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  341  fi
+
+harness/harness-core/dockerization/pipeline-service/scripts/replace_configs.sh:
+   23  
+   24: yq delete -i $CONFIG_FILE 'grpcServerConfig.connectors.(secure==true)'
+   25: yq delete -i $CONFIG_FILE 'gitSdkConfiguration.gitSdkGrpcServerConfig.connectors.(secure==true)'
+   26  
+
+  212  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  213:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  214    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  215  else
+  216:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  217  fi
+
+  263  
+  264: yq delete -i $REDISSON_CACHE_FILE codec
+  265  
+
+  275  if [[ "$CACHE_CONFIG_USE_SENTINEL" == "true" ]]; then
+  276:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  277  fi
+
+harness/harness-core/dockerization/platform-service/scripts/replace_configs.sh:
+   64  if [[ "" != "$ALLOWED_ORIGINS" ]]; then
+   65:   yq delete -i $CONFIG_FILE allowedOrigins
+   66    yq write -i $CONFIG_FILE allowedOrigins "$ALLOWED_ORIGINS"
+
+  153  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  154:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  155    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  156  else
+  157:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  158  fi
+
+  241  if [[ "" != "$NOTIFICATION_MONGO_HOSTS_AND_PORTS" ]]; then
+  242:   yq delete -i $CONFIG_FILE notificationServiceConfig.mongo.uri
+  243    write_mongo_hosts_and_ports notificationServiceConfig.mongo "$NOTIFICATION_MONGO_HOSTS_AND_PORTS"
+
+  247  if [[ "" != "$AUDIT_MONGO_HOSTS_AND_PORTS" ]]; then
+  248:   yq delete -i $CONFIG_FILE auditServiceConfig.mongo.uri
+  249    write_mongo_hosts_and_ports auditServiceConfig.mongo "$AUDIT_MONGO_HOSTS_AND_PORTS"
+
+  253  if [[ "" != "$RESOURCE_GROUP_MONGO_HOSTS_AND_PORTS" ]]; then
+  254:   yq delete -i $CONFIG_FILE resourceGroupServiceConfig.mongo.uri
+  255    write_mongo_hosts_and_ports resourceGroupServiceConfig.mongo "$RESOURCE_GROUP_MONGO_HOSTS_AND_PORTS"
+
+harness/harness-core/dockerization/template-service/scripts/replace_configs.sh:
+   19  
+   20: yq delete -i $CONFIG_FILE 'gitSdkConfiguration.gitSdkGrpcServerConfig.connectors.(secure==true)'
+   21  
+
+  103  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  104:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  105    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  106  else
+  107:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  108  fi
+
+  126  
+  127: yq delete -i $REDISSON_CACHE_FILE codec
+  128  
+
+  138  if [[ "$CACHE_CONFIG_USE_SENTINEL" == "true" ]]; then
+  139:   yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  140  fi
+
+harness/harness-core/dockerization/verification/scripts/replace_configs.sh:
+  16  
+  17: yq delete -i /opt/harness/verification-config.yml server.adminConnectors
+  18: yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==h2)'
+  19  
+
+  54  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  55:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==file)'
+  56:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  57    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  59    if [[ "$ROLLING_FILE_LOGGING_ENABLED" == "true" ]]; then
+  60:     yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  61      yq write -i $CONFIG_FILE 'logging.appenders.(type==file).currentLogFilename' "/opt/harness/logs/verification.log"
+
+  63    else
+  64:     yq delete -i $CONFIG_FILE 'logging.appenders.(type==file)'
+  65:     yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  66    fi
+
+harness/harness-core/platform-service/build/container/scripts/replace_configs.sh:
+   64  if [[ "" != "$ALLOWED_ORIGINS" ]]; then
+   65:   yq delete -i $CONFIG_FILE allowedOrigins
+   66    yq write -i $CONFIG_FILE allowedOrigins "$ALLOWED_ORIGINS"
+
+  153  if [[ "$STACK_DRIVER_LOGGING_ENABLED" == "true" ]]; then
+  154:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  155    yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+  156  else
+  157:   yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  158  fi
+
+  241  if [[ "" != "$NOTIFICATION_MONGO_HOSTS_AND_PORTS" ]]; then
+  242:   yq delete -i $CONFIG_FILE notificationServiceConfig.mongo.uri
+  243    write_mongo_hosts_and_ports notificationServiceConfig.mongo "$NOTIFICATION_MONGO_HOSTS_AND_PORTS"
+
+  247  if [[ "" != "$AUDIT_MONGO_HOSTS_AND_PORTS" ]]; then
+  248:   yq delete -i $CONFIG_FILE auditServiceConfig.mongo.uri
+  249    write_mongo_hosts_and_ports auditServiceConfig.mongo "$AUDIT_MONGO_HOSTS_AND_PORTS"
+
+  253  if [[ "" != "$RESOURCE_GROUP_MONGO_HOSTS_AND_PORTS" ]]; then
+  254:   yq delete -i $CONFIG_FILE resourceGroupServiceConfig.mongo.uri
+  255    write_mongo_hosts_and_ports resourceGroupServiceConfig.mongo "$RESOURCE_GROUP_MONGO_HOSTS_AND_PORTS"
+
+on-prem-automation/on-prem-builds/upgrade_yq/yqwrite.txt:
+   181  
+   182:   209    yq delete -i $CONFIG_FILE logging.appenders[0]
+   183    210:   yq write -i $CONFIG_FILE logging.appenders[0].stackdriverLogEnabled "true"
+
+   185  
+   186:   213      yq delete -i $CONFIG_FILE logging.appenders[1]
+   187    214:     yq write -i $CONFIG_FILE logging.appenders[1].currentLogFilename "/opt/harness/logs/portal.log"
+
+   626    670:   yq write -i $CONFIG_FILE redisAtmosphereConfig.sentinel true
+   627:   671    yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+   628  
+
+   850  harness/harness-core/110-change-data-capture/container/scripts/replace_configs.sh:
+   851:   10    yq delete -i $CONFIG_FILE logging.appenders[0]
+   852    11:   yq write -i $CONFIG_FILE logging.appenders[0].stackdriverLogEnabled "true"
+
+   921  
+   922:    40  yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==https)'
+   923     41: yq write -i $CONFIG_FILE server.adminConnectors "[]"
+
+   943  
+   944:    72    yq delete -i $CONFIG_FILE allowedOrigins
+   945     73:   yq write -i $CONFIG_FILE allowedOrigins "$ALLOWED_ORIGINS"
+
+   951  
+   952:    81    yq delete -i $CONFIG_FILE mongo.uri
+   953     82:   yq write -i $CONFIG_FILE mongo.username "$MONGO_USERNAME"
+
+   990  
+   991:   123    yq delete -i $CONFIG_FILE pmsMongo.uri
+   992    124:   yq write -i $CONFIG_FILE pmsMongo.username "$PMS_MONGO_USERNAME"
+
+  1145  
+  1146:   288    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  1147    289:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  1223  
+  1224:   49    yq delete -i /opt/harness/command-library-server-config.yml logging.appenders[0]
+  1225    50:   yq write -i /opt/harness/command-library-server-config.yml logging.appenders[0].stackdriverLogEnabled "true"
+
+  1400  
+  1401:   198    yq delete -i $CONFIG_FILE logging.appenders[0]
+  1402    199:   yq write -i $CONFIG_FILE logging.appenders[0].stackdriverLogEnabled "true"
+
+  1404  
+  1405:   202      yq delete -i $CONFIG_FILE logging.appenders[1]
+  1406    203:     yq write -i $CONFIG_FILE logging.appenders[1].currentLogFilename "/opt/harness/logs/delegate-service.log"
+
+  1512    325:   yq write -i $CONFIG_FILE redisAtmosphereConfig.sentinel true
+  1513:   326    yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  1514  
+
+  1719  
+  1720:   56    yq delete -i /opt/harness/verification-config.yml logging.appenders[0]
+  1721    57:   yq write -i /opt/harness/verification-config.yml logging.appenders[0].stackdriverLogEnabled "true"
+
+  1723  
+  1724:   60      yq delete -i /opt/harness/verification-config.yml logging.appenders[1]
+  1725    61:     yq write -i /opt/harness/verification-config.yml logging.appenders[1].currentLogFilename "/opt/harness/logs/verification.log"
+
+  1989  
+  1990:    49    yq delete -i /opt/harness/cv-nextgen-config.yml logging.appenders[0]
+  1991     50:   yq write -i /opt/harness/cv-nextgen-config.yml logging.appenders[0].stackdriverLogEnabled "true"
+
+  2074  
+  2075:    19  yq delete -i $CONFIG_FILE server.applicationConnectors[0]
+  2076     20: yq write -i $CONFIG_FILE server.adminConnectors "[]"
+
+  2199  
+  2200:   151    yq delete -i $CONFIG_FILE allowedOrigins
+  2201    152:   yq write -i $CONFIG_FILE allowedOrigins "$ALLOWED_ORIGINS"
+
+  2315  
+  2316:   268    yq delete -i $CONFIG_FILE logging.appenders[0]
+  2317    269:   yq write -i $CONFIG_FILE logging.appenders[0].stackdriverLogEnabled "true"
+
+  2352  
+  2353:   83    yq delete -i $CONFIG_FILE logging.appenders[0]
+  2354    84:   yq write -i $CONFIG_FILE logging.appenders[0].stackdriverLogEnabled "true"
+
+  2453  
+  2454:    106    yq delete -i $CONFIG_FILE mongo.uri
+  2455     107:   yq write -i $CONFIG_FILE mongo.username "$MONGO_USERNAME"
+
+  2512  
+  2513:    167      yq delete -i $CONFIG_FILE events-mongo.uri
+  2514     168:     yq write -i $CONFIG_FILE events-mongo.username "$EVENTS_MONGO_USERNAME"
+
+  2594  
+  2595:    259    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  2596     260:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  2598  
+  2599:    263      yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  2600     264:     yq write -i $CONFIG_FILE 'logging.appenders.(type==file).currentLogFilename' "/opt/harness/logs/portal.log"
+
+  3035     716:   yq write -i $CONFIG_FILE redisAtmosphereConfig.sentinel true
+  3036:    717    yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  3037  
+
+  3498  
+  3499:   213    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  3500    214:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  3651  
+  3652:   104    yq delete -i $CONFIG_FILE logging.appenders[0]
+  3653    105:   yq write -i $CONFIG_FILE logging.appenders[0].stackdriverLogEnabled "true"
+
+  3700  
+  3701:   31    yq delete -i $CONFIG_FILE logging.appenders[0]
+  3702    32:   yq write -i $CONFIG_FILE logging.appenders[0].stackdriverLogEnabled "true"
+
+  3724  
+  3725:    34    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  3726     35:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  3761  
+  3762:   14    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  3763    15:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  3798  
+  3799:   18  yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==https)'
+  3800    19: yq write -i $CONFIG_FILE server.adminConnectors "[]"
+
+  3802  
+  3803:   22    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  3804    23:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  4082  
+  4083:   120    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  4084    121:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  4087  harness/harness-core/dockerization/change-data-capture/scripts/replace_configs.sh:
+  4088:   10    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  4089    11:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  4152  
+  4153:    19  yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==https)'
+  4154     20: yq write -i $CONFIG_FILE server.adminConnectors "[]"
+
+  4281  
+  4282:   155    yq delete -i $CONFIG_FILE allowedOrigins
+  4283    156:   yq write -i $CONFIG_FILE allowedOrigins "$ALLOWED_ORIGINS"
+
+  4393  
+  4394:   268    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  4395    269:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  4449  
+  4450:   49    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  4451    50:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  4489  
+  4490:    49    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  4491     50:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  4585  
+  4586:    34    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  4587     35:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  4786  
+  4787:   198    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  4788    199:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  4790  
+  4791:   202      yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  4792    203:     yq write -i $CONFIG_FILE 'logging.appenders.(type==file).currentLogFilename' "/opt/harness/logs/delegate-service.log"
+
+  4898    326:   yq write -i $CONFIG_FILE redisAtmosphereConfig.sentinel true
+  4899:   327    yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  4900  
+
+  5064  
+  5065:   39    yq delete -i $CONFIG_FILE harness-mongo.uri
+  5066    40:   yq write -i $CONFIG_FILE harness-mongo.username "$MONGO_USERNAME"
+
+  5091  
+  5092:   74    yq delete -i $CONFIG_FILE events-mongo.uri
+  5093    75:   yq write -i $CONFIG_FILE events-mongo.username "$EVENTS_MONGO_USERNAME"
+
+  5119  
+  5120:   31    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  5121    32:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  5199  
+  5200:    106    yq delete -i $CONFIG_FILE mongo.uri
+  5201     107:   yq write -i $CONFIG_FILE mongo.username "$MONGO_USERNAME"
+
+  5258  
+  5259:    167      yq delete -i $CONFIG_FILE events-mongo.uri
+  5260     168:     yq write -i $CONFIG_FILE events-mongo.username "$EVENTS_MONGO_USERNAME"
+
+  5340  
+  5341:    259    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  5342     260:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  5344  
+  5345:    263      yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  5346     264:     yq write -i $CONFIG_FILE 'logging.appenders.(type==file).currentLogFilename' "/opt/harness/logs/portal.log"
+
+  5781     716:   yq write -i $CONFIG_FILE redisAtmosphereConfig.sentinel true
+  5782:    717    yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  5783  
+
+  6124  
+  6125:   106    yq delete -i $CONFIG_FILE cg.mongo.uri
+  6126    107:   yq write -i $CONFIG_FILE cg.mongo.username "$MONGO_USERNAME"
+
+  6175  
+  6176:   159      yq delete -i $CONFIG_FILE cg.events-mongo.uri
+  6177    160:     yq write -i $CONFIG_FILE cg.events-mongo.username "$EVENTS_MONGO_USERNAME"
+
+  6257  
+  6258:   251    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  6259    252:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  6261  
+  6262:   255      yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  6263    256:     yq write -i $CONFIG_FILE 'logging.appenders.(type==file).currentLogFilename' "/opt/harness/logs/portal.log"
+
+  6674    684:   yq write -i $CONFIG_FILE cg.redisAtmosphereConfig.sentinel true
+  6675:   685    yq delete -i $REDISSON_CACHE_FILE singleServerConfig
+  6676  
+
+  6954  harness/harness-core/dockerization/ng-dashboard-service/scripts/replace_configs.sh:
+  6955:   10    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  6956    11:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  6992  
+  6993:   58    yq delete -i $CONFIG_FILE allowedOrigins
+  6994    59:   yq write -i $CONFIG_FILE allowedOrigins "$ALLOWED_ORIGINS"
+
+  7011  
+  7012:    40  yq delete -i $CONFIG_FILE 'server.applicationConnectors.(type==https)'
+  7013     41: yq write -i $CONFIG_FILE server.adminConnectors "[]"
+
+  7033  
+  7034:    72    yq delete -i $CONFIG_FILE allowedOrigins
+  7035     73:   yq write -i $CONFIG_FILE allowedOrigins "$ALLOWED_ORIGINS"
+
+  7041  
+  7042:    81    yq delete -i $CONFIG_FILE mongo.uri
+  7043     82:   yq write -i $CONFIG_FILE mongo.username "$MONGO_USERNAME"
+
+  7080  
+  7081:   123    yq delete -i $CONFIG_FILE pmsMongo.uri
+  7082    124:   yq write -i $CONFIG_FILE pmsMongo.username "$PMS_MONGO_USERNAME"
+
+  7235  
+  7236:   288    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  7237    289:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  7477  
+  7478:   213    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  7479    214:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  7581  
+  7582:    65    yq delete -i $CONFIG_FILE allowedOrigins
+  7583     66:   yq write -i $CONFIG_FILE allowedOrigins "$ALLOWED_ORIGINS"
+
+  7669  
+  7670:   154    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  7671    155:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  7829  
+  7830:   104    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  7831    105:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  7905  
+  7906:   56    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  7907    57:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
+
+  7909  
+  7910:   60      yq delete -i $CONFIG_FILE 'logging.appenders.(type==gke-console)'
+  7911    61:     yq write -i $CONFIG_FILE 'logging.appenders.(type==file).currentLogFilename' "/opt/harness/logs/verification.log"
+
+  7954  
+  7955:    65    yq delete -i $CONFIG_FILE allowedOrigins
+  7956     66:   yq write -i $CONFIG_FILE allowedOrigins "$ALLOWED_ORIGINS"
+
+  8042  
+  8043:   154    yq delete -i $CONFIG_FILE 'logging.appenders.(type==console)'
+  8044    155:   yq write -i $CONFIG_FILE 'logging.appenders.(type==gke-console).stackdriverLogEnabled' "true"
