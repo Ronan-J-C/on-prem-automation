@@ -1,0 +1,33 @@
+name: policy-mgmt
+replicas: 1
+image: us.gcr.io/platform-205701/harness/policy-mgmt
+dockercfg: ${artifact.source.dockerconfig}
+servicePort: 3000
+serviceTargetPort: 3000
+grpcServicePort: 11002
+grpcServiceTargetPort: 11002
+pathPrefix: ${serviceVariable.PATH_PREFIX}
+namespace: 
+  name: ${infra.kubernetes.namespace}
+  annotated: false
+environment: ${serviceVariable.ENV}
+domainPrefix: ${serviceVariable.domainPrefix}
+
+env:
+  config:
+
+    # Database
+    APP_DATABASE_DRIVER: sqlite3
+    APP_DATABASE_DATASOURCE: database.sqlite3?_foreign_keys=on
+    APP_DATABASE_PASSWORD: DBPASSWORD
+    APP_DATABASE_USER: DBUSER
+
+    # Required
+    APP_PLATFORM_BASE_URL: https://nginx-ingress-controller.ingress-nginx
+    APP_TOKEN_JWT_SECRET: gcpkms:jwtIdentityServiceSecret_default
+    APP_INTERNAL_TOKEN_JWT_SECRET: gcpkms:Policy Mgmt InterService
+    APP_NEXT_GEN_MANAGER_JWT_SECRET: MANAGER_SERVICE_JWT_SECRET
+
+    # Optional
+    APP_ENABLE_AUDIT_TRAIL: 'false'
+    APP_DEBUG: true

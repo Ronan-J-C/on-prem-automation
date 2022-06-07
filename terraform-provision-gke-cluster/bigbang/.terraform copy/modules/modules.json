@@ -1,0 +1,1 @@
+{"Modules":[{"Key":"firewall_rules","Source":"registry.terraform.io/terraform-google-modules/network/google//modules/firewall-rules","Version":"5.0.0","Dir":".terraform/modules/firewall_rules/modules/firewall-rules"},{"Key":"","Source":"","Dir":"."}]}

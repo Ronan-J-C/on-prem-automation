@@ -1,0 +1,5 @@
+harnessApiVersion: '1.0'
+type: GCR
+dockerImageName: platform-205701/drone-policy-mgmt
+registryHostName: us.gcr.io
+serverName: Platform Viewer

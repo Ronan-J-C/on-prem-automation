@@ -1,0 +1,45 @@
+harnessApiVersion: '1.0'
+type: SERVICE
+artifactType: DOCKER
+configVariables:
+- name: domainPrefix
+  value: '""'
+  valueType: TEXT
+- name: APP_ENABLE_AUDIT_TRAIL
+  value: 'false'
+  valueType: TEXT
+- name: APP_GITSYNC_PLATFORM_URL
+  value: nginx-ingress-controller.ingress-nginx.svc.cluster.local:443
+  valueType: TEXT
+- name: APP_NEXT_GEN_MANAGER_JWT_SECRET
+  value: gcpkms:MANAGER_SERVICE_JWT_SECRET
+  valueType: ENCRYPTED_TEXT
+- name: APP_PLATFORM_BASE_URL
+  value: https://nginx-ingress-controller.ingress-nginx
+  valueType: TEXT
+- name: APP_GITSYNC_PLATFORM_AUTHORITY
+  value: '""'
+  valueType: TEXT
+- name: APP_TOKEN_JWT_SECRET
+  value: gcpkms:jwtIdentityServiceSecret_default
+  valueType: ENCRYPTED_TEXT
+- name: PATH_PREFIX
+  value: '""'
+  valueType: TEXT
+- name: APP_INTERNAL_TOKEN_JWT_SECRET
+  value: gcpkms:Policy Mgmt InterService
+  valueType: ENCRYPTED_TEXT
+- name: APP_DATABASE_USER
+  value: DBUSER
+  valueType: TEXT
+- name: APP_DATABASE_PASSWORD
+  value: DBPASSWORD
+  valueType: TEXT
+- name: APP_DATABASE_DRIVER
+  value: sqlite3
+  valueType: TEXT
+- name: APP_DATABASE_DATASOURCE
+  value: database.sqlite3?_foreign_keys=on
+  valueType: TEXT
+deploymentType: KUBERNETES
+helmVersion: V2

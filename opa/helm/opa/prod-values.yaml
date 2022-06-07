@@ -1,0 +1,27 @@
+name: policy-mgmt
+replicas: 1
+image: harness/policy-mgmt-signed
+# dockercfg: DONTHAVETHIS
+servicePort: 3000
+serviceTargetPort: 3000
+grpcServicePort: 11002
+grpcServiceTargetPort: 11002
+pathPrefix: ''
+namespace: 
+  name: PROBABLYDONTNEED
+  annotated: false
+environment: YOYOYO
+domainPrefix: ''
+
+env:
+  config:
+    APP_DATABASE_DRIVER: postgres
+    APP_DATABASE_DATASOURCE: 'host=postgresql user=DBUSER password=DBPASSWORD dbname=policy-mgmt sslmode=disable'
+    APP_DATABASE_PASSWORD: FVZptcLIST
+    APP_DATABASE_USER: postgres
+    APP_PLATFORM_BASE_URL: 'http://34.89.36.156'
+    APP_TOKEN_JWT_SECRET: 'jwtIdentityServiceSecret_default'
+    APP_INTERNAL_TOKEN_JWT_SECRET: 'PolicyMgmtInterService'
+    APP_NEXT_GEN_MANAGER_JWT_SECRET: 'MANAGER_SERVICE_JWT_SECRET'
+    APP_ENABLE_AUDIT_TRAIL: 'false'
+    APP_DEBUG: 'true'

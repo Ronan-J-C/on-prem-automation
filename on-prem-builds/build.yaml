@@ -1,0 +1,566 @@
+pipeline:
+    name: BAZEL Build Release Branch - Onprem
+    identifier: BuildRelaseBranch_Onprem
+    properties:
+        ci:
+            codebase:
+                connectorRef: portalgithub
+                build: <+input>
+                resources:
+                    limits:
+                        memory: 4Gi
+                        cpu: 4000m
+    stages:
+        - stage:
+              name: releasebranch
+              identifier: releasebranch
+              type: CI
+              spec:
+                  cloneCodebase: true
+                  execution:
+                      steps:
+                          - step:
+                                type: Run
+                                name: build
+                                identifier: build
+                                description: build code
+                                timeout: 8h
+                                spec:
+                                    connectorRef: gcpplatform
+                                    image: us.gcr.io/platform-205701/jenkins-slave-portal-open-8u242:latest
+                                    command: |-
+                                        export VERSION_FILE=build.properties
+                                        export VERSION=`cat ${VERSION_FILE} | grep 'build.number=' | sed -e 's: *build.number=::g'`
+                                        echo $VERSION
+                                        re='^[0-9]+$'
+                                        if ! [[ $VERSION =~ $re ]] ; then
+                                          echo "error: Version [$VERSION] is not a number" >&2; exit 1
+                                        fi
+                                        export GIT_BRANCH=$DRONE_COMMIT_BRANCH
+                                        export GIT_COMMIT=$DRONE_COMMIT_SHA
+                                        echo $GCP_KEY | base64 -d > /tmp/storage_secret.json
+                                        echo $M2_SETTINGS_XML_TEXT | base64 -d > /root/.m2/settings.xml
+                                        echo $HARNESS_WILD_CERT | base64 -d > /harness/harness_wild.p12
+                                        export KEY_STORE="/harness/harness_wild.p12"
+                                        export KEY_STORE_PASSWORD=$KEYSTORE_PASS
+                                        GCP_KEY="/tmp/storage_secret.json"
+                                        export PLATFORM="jenkins"
+                                        ln -s "/root/.m2" "/harness/.m2"
+                                        BUILD_NAME=master-$HARNESS_BUILD_ID
+                                        source /etc/profile.d/maven.sh
+
+                                        chmod +x scripts/bazel/UpdateVersionInfoyaml.sh 
+                                        scripts/bazel/UpdateVersionInfoyaml.sh $VERSION
+
+                                        echo "--------------------------------------------------------------------------------------------"
+                                        echo INFO: $VERSION $GIT_COMMIT $GIT_BRANCH $(date) $patch $buildMajorVersion $buildMinorVersion
+                                        echo "--------------------------------------------------------------------------------------------"
+
+                                        scripts/bazel/generate_credentials.sh
+                                        yum install zlib-devel -y
+
+                                        scripts/bazel/bazel_script.sh
+                                        #mvn -B -T 2C clean package -e -Dbuild.number=$BUILD -DgitBranch=master -DskipTests --also-make -Dmaven.repo.local=/harness/.m2/repository
+
+                                        scripts/jenkins/portal-openjdk-bazel.sh || true
+                                        echo "list the jars built"
+                                        find . -name "*.jar"
+                                        find . -name "*Dockerfile*"
+
+                                        echo 'Creating files for delegate proxy'
+                                        mkdir -p destination/dist/delegate
+                                        mkdir -p destination/dist/watcher
+                                        cp dist/delegate/delegate-capsule.jar destination/dist/delegate/delegate-capsule.jar
+                                        cp dist/watcher/watcher-capsule.jar destination/dist/watcher/watcher-capsule.jar
+                                        ls -lh dist/delegate
+                                        ls -lh destination/dist/delegate
+                                        cp dist/delegate-proxy/nginx.conf destination/nginx.conf
+                                        chmod +x dist/delegate-proxy/setup.sh
+                                        ./dist/delegate-proxy/setup.sh
+
+                                        echo $VERSION
+                                    privileged: false
+                                    envVariables:
+                                        BUILD_PURPOSE: RELEASE
+                                        USE_BAZEL_DELEGATE: "true"
+                                    outputVariables:
+                                        - name: VERSION
+                                    resources:
+                                        limits:
+                                            memory: 15Gi
+                                            cpu: 5000m
+                          - parallel:
+                                - step:
+                                      type: BuildAndPushDockerRegistry
+                                      name: uploadToDockerhubManager
+                                      identifier: uploadToDockerhubManager
+                                      spec:
+                                          connectorRef: Docker_Jenkins
+                                          repo: harness/manager
+                                          tags:
+                                              - <+steps.build.output.outputVariables.VERSION>
+                                          dockerfile: /harness/dist/manager/Dockerfile
+                                          context: /harness/dist/manager
+                                          optimize: true
+                                          resources:
+                                              limits:
+                                                  memory: 3000Mi
+                                                  cpu: 1000m
+                                      failureStrategies:
+                                          - onFailure:
+                                                errors:
+                                                    - Timeout
+                                                    - Unknown
+                                                action:
+                                                    type: Retry
+                                                    spec:
+                                                        retryCount: 3
+                                                        retryIntervals:
+                                                            - 10s
+                                                        onRetryFailure:
+                                                            action:
+                                                                type: Abort
+                                - step:
+                                      type: BuildAndPushDockerRegistry
+                                      name: uploadToDockerhubPMS
+                                      identifier: uploadToDockerhubPMS
+                                      spec:
+                                          connectorRef: Docker_Jenkins
+                                          repo: harness/pipeline-service
+                                          tags:
+                                              - <+steps.build.output.outputVariables.VERSION>
+                                          dockerfile: /harness/dist/pipeline-service/Dockerfile
+                                          context: /harness/dist/pipeline-service
+                                          optimize: true
+                                          resources:
+                                              limits:
+                                                  memory: 3000Mi
+                                                  cpu: 1000m
+                                      failureStrategies:
+                                          - onFailure:
+                                                errors:
+                                                    - Timeout
+                                                    - Unknown
+                                                action:
+                                                    type: Retry
+                                                    spec:
+                                                        retryCount: 3
+                                                        retryIntervals:
+                                                            - 10s
+                                                        onRetryFailure:
+                                                            action:
+                                                                type: Abort
+                                - step:
+                                      type: BuildAndPushDockerRegistry
+                                      name: uploadToDockerhubPlatformService
+                                      identifier: uploadToDockerhubPlatformService
+                                      spec:
+                                          connectorRef: Docker_Jenkins
+                                          repo: harness/platform-service
+                                          tags:
+                                              - <+steps.build.output.outputVariables.VERSION>
+                                          dockerfile: /harness/dist/platform-service/Dockerfile
+                                          context: /harness/dist/platform-service
+                                          optimize: true
+                                          resources:
+                                              limits:
+                                                  memory: 3Gi
+                                                  cpu: 1
+                                      failureStrategies:
+                                          - onFailure:
+                                                errors:
+                                                    - Timeout
+                                                    - Unknown
+                                                action:
+                                                    type: Retry
+                                                    spec:
+                                                        retryCount: 3
+                                                        retryIntervals:
+                                                            - 10s
+                                                        onRetryFailure:
+                                                            action:
+                                                                type: Abort
+                                - step:
+                                      type: GCSUpload
+                                      name: uploadDelegate
+                                      identifier: uploadDelegate
+                                      spec:
+                                          connectorRef: gcpplatform
+                                          bucket: delegate-jars/artifacts/on-prem/openjdk-8u242
+                                          sourcePath: dist/delegate/delegate-capsule.jar
+                                          target: delegate-<+steps.build.output.outputVariables.VERSION>.jar
+                                          resources:
+                                              limits:
+                                                  memory: 3Gi
+                                                  cpu: "1"
+                                - step:
+                                      type: BuildAndPushDockerRegistry
+                                      name: uploadToDockerhubTemplateService
+                                      identifier: uploadToDockerhubTemplateService
+                                      spec:
+                                          connectorRef: Docker_Jenkins
+                                          repo: harness/template-service
+                                          tags:
+                                              - <+steps.build.output.outputVariables.VERSION>
+                                          dockerfile: /harness/dist/template-service/Dockerfile
+                                          context: /harness/dist/template-service
+                                          optimize: true
+                                          resources:
+                                              limits:
+                                                  memory: 3000Mi
+                                                  cpu: 1000m
+                                      failureStrategies:
+                                          - onFailure:
+                                                errors:
+                                                    - AllErrors
+                                                action:
+                                                    type: Ignore
+                                - step:
+                                      type: GCSUpload
+                                      name: uploadWatcherToGcs
+                                      identifier: uploadWatcherToGcs
+                                      spec:
+                                          connectorRef: gcpplatform
+                                          bucket: watcher-jars/artifacts/on-prem/openjdk-8u242
+                                          sourcePath: dist/watcher/watcher-capsule.jar
+                                          target: watcher-<+steps.build.output.outputVariables.VERSION>.jar
+                                          resources:
+                                              limits:
+                                                  memory: 3Gi
+                                                  cpu: "1"
+                          - parallel:
+                                - step:
+                                      type: BuildAndPushDockerRegistry
+                                      name: uploadCvToDockerhub
+                                      identifier: uploadCvToDockerhub
+                                      spec:
+                                          connectorRef: Docker_Jenkins
+                                          repo: harness/verification-service
+                                          tags:
+                                              - <+steps.build.output.outputVariables.VERSION>
+                                          dockerfile: /harness/dist/verification-service/Dockerfile
+                                          context: /harness/dist/verification-service
+                                          optimize: true
+                                          resources:
+                                              limits:
+                                                  memory: 3000Mi
+                                                  cpu: 1000m
+                                      failureStrategies:
+                                          - onFailure:
+                                                errors:
+                                                    - Timeout
+                                                    - Unknown
+                                                action:
+                                                    type: Retry
+                                                    spec:
+                                                        retryCount: 3
+                                                        retryIntervals:
+                                                            - 10s
+                                                        onRetryFailure:
+                                                            action:
+                                                                type: Abort
+                                - step:
+                                      type: BuildAndPushDockerRegistry
+                                      name: uploadToDockerhubCIManger
+                                      identifier: uploadToDockerhubCIManger
+                                      spec:
+                                          connectorRef: Docker_Jenkins
+                                          repo: harness/ci-manager
+                                          tags:
+                                              - <+steps.build.output.outputVariables.VERSION>
+                                          dockerfile: /harness/dist/ci-manager/Dockerfile
+                                          context: /harness/dist/ci-manager
+                                          optimize: true
+                                          resources:
+                                              limits:
+                                                  memory: 3000Mi
+                                                  cpu: 1000m
+                                      failureStrategies:
+                                          - onFailure:
+                                                errors:
+                                                    - Timeout
+                                                    - Unknown
+                                                action:
+                                                    type: Retry
+                                                    spec:
+                                                        retryCount: 3
+                                                        retryIntervals:
+                                                            - 10s
+                                                        onRetryFailure:
+                                                            action:
+                                                                type: Abort
+                                - step:
+                                      type: BuildAndPushDockerRegistry
+                                      name: uploadToDockerhubDelegateProxy
+                                      identifier: uploadToDockerhubDelegateProxy
+                                      spec:
+                                          connectorRef: harnesscie
+                                          repo: harness/delegate-proxy
+                                          tags:
+                                              - <+steps.build.output.outputVariables.VERSION>
+                                          dockerfile: /harness/dist/delegate-proxy/Dockerfile
+                                          context: /harness/destination
+                                          optimize: true
+                                          resources:
+                                              limits:
+                                                  memory: 4Gi
+                                                  cpu: "2"
+                                      failureStrategies:
+                                          - onFailure:
+                                                errors:
+                                                    - Timeout
+                                                    - Unknown
+                                                action:
+                                                    type: Retry
+                                                    spec:
+                                                        retryCount: 3
+                                                        retryIntervals:
+                                                            - 10s
+                                                        onRetryFailure:
+                                                            action:
+                                                                type: Abort
+                                - step:
+                                      type: GCSUpload
+                                      name: uploadPovInstallToGcs
+                                      identifier: uploadPovInstallToGcs
+                                      spec:
+                                          connectorRef: gcpplatform
+                                          bucket: disconnected_on_prem_pov_template/on-prem/openjdk-8u242/<+steps.build.output.outputVariables.VERSION>
+                                          sourcePath: dist/disconnected_on_prem_pov/disconnected_on_prem_pov_template.tar.gz
+                                          target: disconnected_on_prem_pov_template.tar.gz
+                                          resources:
+                                              limits:
+                                                  memory: 3Gi
+                                                  cpu: "1"
+                          - parallel:
+                                - step:
+                                      type: BuildAndPushDockerRegistry
+                                      name: uploadToDockerhubNgManager
+                                      identifier: uploadToDockerhubNgManager
+                                      spec:
+                                          connectorRef: Docker_Jenkins
+                                          repo: harness/ng-manager
+                                          tags:
+                                              - <+steps.build.output.outputVariables.VERSION>
+                                          dockerfile: /harness/dist/ng-manager/Dockerfile
+                                          context: /harness/dist/ng-manager
+                                          optimize: true
+                                          resources:
+                                              limits:
+                                                  memory: 3000Mi
+                                                  cpu: 1000m
+                                      failureStrategies:
+                                          - onFailure:
+                                                action:
+                                                    type: Retry
+                                                    spec:
+                                                        onRetryFailure:
+                                                            action:
+                                                                type: Abort
+                                                        retryCount: 3
+                                                        retryIntervals:
+                                                            - 10s
+                                                errors:
+                                                    - Timeout
+                                                    - Unknown
+                                      when:
+                                          stageStatus: Success
+                                - step:
+                                      type: BuildAndPushDockerRegistry
+                                      name: uploadToDockerhubAccessControlService
+                                      identifier: uploadToDockerhubAccessControlService
+                                      spec:
+                                          connectorRef: Docker_Jenkins
+                                          repo: harness/accesscontrol-service
+                                          tags:
+                                              - <+steps.build.output.outputVariables.VERSION>
+                                          dockerfile: /harness/dist/accesscontrol-service/Dockerfile
+                                          context: /harness/dist/accesscontrol-service
+                                          optimize: true
+                                          resources:
+                                              limits:
+                                                  memory: 3Gi
+                                                  cpu: 1
+                                      failureStrategies:
+                                          - onFailure:
+                                                errors:
+                                                    - Timeout
+                                                    - Unknown
+                                                action:
+                                                    type: Retry
+                                                    spec:
+                                                        retryCount: 3
+                                                        retryIntervals:
+                                                            - 10s
+                                                        onRetryFailure:
+                                                            action:
+                                                                type: Abort
+                                      when:
+                                          stageStatus: Success
+                                          condition: "false"
+                                - step:
+                                      type: BuildAndPushDockerRegistry
+                                      name: uploadToDockerhubCDC
+                                      identifier: uploadToDockerhubCDC
+                                      spec:
+                                          connectorRef: Docker_Jenkins
+                                          repo: harness/cdcdata
+                                          tags:
+                                              - <+steps.build.output.outputVariables.VERSION>
+                                          dockerfile: /harness/dist/change-data-capture/Dockerfile
+                                          context: /harness/dist/change-data-capture
+                                          optimize: true
+                                          resources:
+                                              limits:
+                                                  memory: 3000Mi
+                                                  cpu: 1000m
+                                - step:
+                                      type: BuildAndPushDockerRegistry
+                                      name: uploadToDockerHubCVNG
+                                      identifier: uploadToDockerHubCVNG
+                                      spec:
+                                          connectorRef: Docker_Jenkins
+                                          repo: harness/cv-nextgen
+                                          tags:
+                                              - <+steps.build.output.outputVariables.VERSION>
+                                          dockerfile: /harness/dist/cv-nextgen/Dockerfile
+                                          context: /harness/dist/cv-nextgen
+                                          optimize: true
+                                          resources:
+                                              limits:
+                                                  memory: 3Gi
+                                                  cpu: "1"
+                                      failureStrategies: []
+                          - step:
+                                type: Run
+                                name: signDockerhubImages
+                                identifier: signDockerhubImages
+                                spec:
+                                    connectorRef: gcpplatform
+                                    image: us.gcr.io/platform-205701/jenkins-slave-dockerizer
+                                    command: |-
+                                        IMAGE_TAG=<+pipeline.stages.releasebranch.spec.execution.steps.build.output.outputVariables.VERSION>
+                                        REPO="harness"
+
+                                        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+
+                                        echo ${HARNESS_SIGNING_KEY}  | base64 -di > key.pem
+                                        chmod 600 key.pem
+
+                                        (cat <<END
+                                        ${HARNESS_SIGNING_KEY_PASSPHRASE}
+                                        ${HARNESS_SIGNING_KEY_PASSPHRASE}
+                                        END
+                                        ) |  docker trust key load key.pem --name harness
+
+                                        for SERVICE in cdcdata ci-manager manager ng-manager pipeline-service template-service platform-service verification-service cv-nextgen
+                                        do
+                                        echo $SERVICE
+                                        docker pull $REPO/${SERVICE}:${IMAGE_TAG}
+                                        docker tag $REPO/${SERVICE}:${IMAGE_TAG} harness/${SERVICE}-signed:${IMAGE_TAG}
+                                        (cat <<END
+                                        $HARNESS_SIGNING_KEY_PASSPHRASE
+                                        $HARNESS_SIGNING_KEY_PASSPHRASE
+                                        END
+                                        ) | docker trust sign $REPO/${SERVICE}-signed:${IMAGE_TAG}
+                                        done
+
+                                        rm key.pem
+                                        rm  ~/.docker/trust/private/1ae1b8b69*
+                                    privileged: false
+                                description: This step is used to sign the dockerhub images
+                                failureStrategies:
+                                    - onFailure:
+                                          action:
+                                              type: Retry
+                                              spec:
+                                                  retryCount: 3
+                                                  retryIntervals:
+                                                      - 10s
+                                                  onRetryFailure:
+                                                      action:
+                                                          type: Abort
+                                          errors:
+                                              - Timeout
+                                              - Unknown
+                  sharedPaths:
+                      - /var/run
+                  infrastructure:
+                      type: KubernetesDirect
+                      spec:
+                          connectorRef: platformci2
+                          namespace: harness-delegate-stage
+                          initTimeout: 15m
+                          automountServiceAccountToken: true
+                  serviceDependencies:
+                      - identifier: dind
+                        name: dind
+                        type: Service
+                        spec:
+                            connectorRef: dockerhub
+                            image: docker:dind
+                            privileged: true
+                            entrypoint:
+                                - dockerd-entrypoint.sh
+                            resources:
+                                limits:
+                                    memory: 2Gi
+                                    cpu: "2"
+              variables:
+                  - name: JFROG_USERNAME
+                    type: String
+                    value: harness-internal-read
+                  - name: JFROG_PASSWORD
+                    type: Secret
+                    value: artifactoryharnessinternalread
+                  - name: JIRA_PASSWORD
+                    type: Secret
+                    value: JIRA_PASSWORD
+                  - name: JIRA_USERNAME
+                    type: Secret
+                    value: jirausername
+                  - name: GCP_KEY
+                    type: Secret
+                    value: gcptextplatform
+                  - name: M2_SETTINGS_XML_TEXT
+                    type: Secret
+                    value: m2settingsxml
+                  - name: KEYSTORE_PASS
+                    type: Secret
+                    value: keystorepass
+                  - name: KEY_STORE_ALIAS
+                    type: Secret
+                    value: keystorealias
+                  - name: HARNESS_WILD_CERT
+                    type: Secret
+                    value: harnesswildcert
+                  - name: OVERRIDE_LOCAL_M2
+                    type: String
+                    value: /harness/.m2/repository
+                  - name: MAVEN_OPTS
+                    type: String
+                    value: -Xmx2048m
+                  - name: BOT_PASSWORD
+                    type: Secret
+                    value: botpasswordencodepass1
+                  - name: BUILD_BAZEL_DEPLOY_JAR
+                    type: String
+                    value: "false"
+                  - name: HARNESS_SIGNING_KEY_PASSPHRASE
+                    type: Secret
+                    value: HARNESS_SIGNING_KEY_PASSPHRASE
+                  - name: HARNESS_SIGNING_KEY
+                    type: Secret
+                    value: DOCKER_ROOT_KEY
+                  - name: DOCKER_USERNAME
+                    type: String
+                    value: harnesscie
+                  - name: DOCKER_PASSWORD
+                    type: Secret
+                    value: harnesscie_dockerhub
+                  - name: BUILD_PURPOSE
+                    type: String
+                    value: RELEASE
+    projectIdentifier: RELEASEBUILDS
+    orgIdentifier: Harness
+    tags: {}

@@ -1,0 +1,10 @@
+dockerfile: /harness/dist/pipeline-service/Dockerfile
+dockerfile: /harness/dist/platform-service/Dockerfile
+dockerfile: /harness/dist/template-service/Dockerfile
+dockerfile: /harness/dist/verification-service/Dockerfile
+dockerfile: /harness/dist/ci-manager/Dockerfile
+dockerfile: /harness/dist/delegate-proxy/Dockerfile
+dockerfile: /harness/dist/ng-manager/Dockerfile
+dockerfile: /harness/dist/accesscontrol-service/Dockerfile
+dockerfile: /harness/dist/change-data-capture/Dockerfile
+dockerfile: /harness/dist/cv-nextgen/Dockerfile
